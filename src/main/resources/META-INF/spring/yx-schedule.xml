@@ -94,6 +94,7 @@
 				<entry key="session.timeout.ms" value="${yxschedule.kafka.consumer.session.timeout.ms}" />
 				<entry key="auto.commit.interval.ms"
 					value="${yxschedule.kafka.consumer.auto.commit.interval.ms}" />
+				<entry key="max.poll.records" value="${yxschedule.kafka.consumer.max.poll.records}" />
 				<entry key="key.deserializer"
 					value="org.apache.kafka.common.serialization.StringDeserializer" />
 				<entry key="value.deserializer"
