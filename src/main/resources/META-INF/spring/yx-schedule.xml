@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+   	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+   	http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+   	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+   	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd"
+	default-autowire="byName">
+
+	<!-- ============================= 驱动层配置 ============================= -->
+	<!-- 拆分层驱动 -->
+	<bean id="taskSplitDriver"
+		class="com.yunxi.common.schedule.concurrent.split.TaskSplitDriverImpl">
+		<property name="taskDispatcher" ref="taskDispatcher" />
+	</bean>
+
+	<!-- 加载层驱动 -->
+	<bean id="taskLoadDriver"
+		class="com.yunxi.common.schedule.concurrent.load.TaskLoadDriverImpl">
+		<property name="taskDispatcher" ref="taskDispatcher" />
+	</bean>
+
+	<!-- 执行层驱动 -->
+	<bean id="taskExecuteDriver"
+		class="com.yunxi.common.schedule.concurrent.execute.TaskExecuteDriverImpl">
+	</bean>
+
+	<!-- 总驱动 -->
+	<bean id="taskManager" class="com.yunxi.common.schedule.TaskManager">
+		<property name="taskSplitDriver" ref="taskSplitDriver" />
+		<property name="taskLoadDriver" ref="taskLoadDriver" />
+		<property name="taskExecuteDriver" ref="taskExecuteDriver" />
+	</bean>
+
+	<!-- 分发器 -->
+	<bean id="taskDispatcher"
+		class="com.yunxi.common.schedule.dispatch.kafka.KafkaTaskDispatcher">
+		<property name="topic" value="${yxschedule.kafka.topic}" />
+		<property name="kafkaTemplate" ref="taskDispatcherKafkaTemplate" />
+	</bean>
+
+	<!-- 触发器 -->
+	<bean id="taskTrigger"
+		class="com.yunxi.common.schedule.trigger.kafka.KafkaTaskTrigger">
+		<property name="taskManager" ref="taskManager" />
+	</bean>
+
+	<!-- ============================= 通信层配置 ============================= -->
+
+	<!-- ===================== 通信层-分发配置 ========================= -->
+	<!-- 分发器-基于kafka实现的消息分发配置 -->
+	<bean id="taskDispatcherKafkaProperties" class="java.util.HashMap">
+		<constructor-arg>
+			<map>
+				<entry key="bootstrap.servers" value="${yxschedule.kafka.server}" />
+				<entry key="retries" value="${yxschedule.kafka.producer.retries}" />
+				<entry key="batch.size" value="${yxschedule.kafka.producer.batch.size}" />
+				<entry key="linger.ms" value="${yxschedule.kafka.producer.linger.ms}" />
+				<entry key="buffer.memory" value="${yxschedule.kafka.producer.buffer.memory}" />
+				<entry key="acks" value="${yxschedule.kafka.producer.acks}" />
+				<entry key="key.serializer"
+					value="org.apache.kafka.common.serialization.StringSerializer" />
+				<entry key="value.serializer"
+					value="com.yunxi.common.schedule.dispatch.kafka.KafkaObjectSerializer" />
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<!-- 分发器-基于kafka实现的消息分发工厂 -->
+	<bean id="taskDispatcherKafkaFactory"
+		class="org.springframework.kafka.core.DefaultKafkaProducerFactory">
+		<constructor-arg>
+			<ref bean="taskDispatcherKafkaProperties" />
+		</constructor-arg>
+	</bean>
+
+	<!-- 分发器-基于kafka实现的消息模板 -->
+	<bean id="taskDispatcherKafkaTemplate" class="org.springframework.kafka.core.KafkaTemplate">
+		<constructor-arg ref="taskDispatcherKafkaFactory" />
+	</bean>
+
+	<!-- ===================== 通信层-触发配置 ========================= -->
+	<!-- 触发器-基于kafka实现的消息触发配置 -->
+	<bean id="taskTriggerKafkaProperties" class="java.util.HashMap">
+		<constructor-arg>
+			<map>
+				<entry key="bootstrap.servers" value="${yxschedule.kafka.server}" />
+				<entry key="group.id" value="${yxschedule.kafka.group.id}" />
+				<entry key="enable.auto.commit" value="${yxschedule.kafka.consumer.enable.auto.commit}" />
+				<entry key="session.timeout.ms" value="${yxschedule.kafka.consumer.session.timeout.ms}" />
+				<entry key="auto.commit.interval.ms"
+					value="${yxschedule.kafka.consumer.auto.commit.interval.ms}" />
+				<entry key="key.deserializer"
+					value="org.apache.kafka.common.serialization.StringDeserializer" />
+				<entry key="value.deserializer"
+					value="com.yunxi.common.schedule.trigger.kafka.KafkaObjectDeserializer" />
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<!-- 触发器-基于kafka实现的消息触发工厂 -->
+	<bean id="taskTriggerKafkaFactory"
+		class="org.springframework.kafka.core.DefaultKafkaConsumerFactory">
+		<constructor-arg>
+			<ref bean="taskTriggerKafkaProperties" />
+		</constructor-arg>
+	</bean>
+
+	<!-- 触发器-基于kafka实现的消息容器配置 -->
+	<bean id="taskTriggerKafkaContainerProperties"
+		class="org.springframework.kafka.listener.config.ContainerProperties">
+		<constructor-arg name="topics">
+			<list>
+				<value>${yxschedule.kafka.topic}</value>
+			</list>
+		</constructor-arg>
+		<property name="messageListener" ref="taskTrigger" />
+	</bean>
+
+	<!-- 触发器-基于kafka实现的消息监听容器 -->
+	<bean id="taskTriggerKafkaListenerContainer"
+		class="org.springframework.kafka.listener.ConcurrentMessageListenerContainer"
+		init-method="doStart">
+		<constructor-arg ref="taskTriggerKafkaFactory" />
+		<constructor-arg ref="taskTriggerKafkaContainerProperties" />
+		<property name="concurrency" value="${yxschedule.kafka.consumer.concurrency}" />
+	</bean>
+</beans>
