@@ -1,6 +1,7 @@
 package com.yunxi.common.schedule.concurrent.execute;
 
 import com.yunxi.common.schedule.model.Task;
+import com.yunxi.common.tracer.concurrent.TracerRunnable;
 
 /**
  * 子任务执行驱动器
@@ -27,8 +28,10 @@ public class TaskExecuteDriverImpl implements TaskExecuteDriver {
                     // TODO LOG 
                     return;
                 }
-                task.getThreadPool().execute(new Runnable() {
-                    public void run() {
+                task.getThreadPool().execute(new TracerRunnable() {
+
+                    @Override
+                    public void doRun() {
                         try {
                             executer.execute(businessKey);
                         } catch (Exception e) {
