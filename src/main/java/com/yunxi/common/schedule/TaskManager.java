@@ -92,4 +92,31 @@ public class TaskManager {
         }
         return null;
     }
+
+    /**
+      * Setter method for property <tt>taskSplitDriver</tt>.
+      * 
+      * @param taskSplitDriver value to be assigned to property taskSplitDriver
+      */
+    public void setTaskSplitDriver(TaskSplitDriver taskSplitDriver) {
+        this.taskSplitDriver = taskSplitDriver;
+    }
+
+    /**
+      * Setter method for property <tt>taskLoadDriver</tt>.
+      * 
+      * @param taskLoadDriver value to be assigned to property taskLoadDriver
+      */
+    public void setTaskLoadDriver(TaskLoadDriver taskLoadDriver) {
+        this.taskLoadDriver = taskLoadDriver;
+    }
+
+    /**
+      * Setter method for property <tt>taskExecuteDriver</tt>.
+      * 
+      * @param taskExecuteDriver value to be assigned to property taskExecuteDriver
+      */
+    public void setTaskExecuteDriver(TaskExecuteDriver taskExecuteDriver) {
+        this.taskExecuteDriver = taskExecuteDriver;
+    }
 }

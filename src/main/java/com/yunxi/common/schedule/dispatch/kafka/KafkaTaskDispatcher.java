@@ -14,7 +14,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import com.yunxi.common.schedule.dispatch.AbstractTaskDispatcher;
 import com.yunxi.common.schedule.model.TaskItem;
-import com.yunxi.common.schedule.model.TaskMessgae;
 
 /**
  * 基于kafka的定时任务分发器
@@ -22,6 +21,9 @@ import com.yunxi.common.schedule.model.TaskMessgae;
  * @version $Id: KafkaTaskDispatcher.java, v 0.1 2019年6月21日 下午8:23:42 leukony Exp $
  */
 public class KafkaTaskDispatcher extends AbstractTaskDispatcher {
+
+    /** Kafka消息队列 */
+    private String                                     topic;
 
     /** Kakfa消息模板 */
     private KafkaTemplate<String, Map<Object, Object>> kafkaTemplate;
@@ -43,12 +45,7 @@ public class KafkaTaskDispatcher extends AbstractTaskDispatcher {
         datas.put(TASK_MSG_ACTION_KEY, TASK_MSG_ACTION_LOAD);
         datas.put(TASK_MSG_NAME_KEY, taskName);
         datas.put(TASK_MSG_ITEM_KEY, item);
-
-        TaskMessgae taskMsg = new TaskMessgae();
-        taskMsg.setTopic(taskName);
-        taskMsg.setData(datas);
-
-        sendMessage(taskMsg);
+        sendMessage(datas);
     }
 
     /** 
@@ -60,20 +57,24 @@ public class KafkaTaskDispatcher extends AbstractTaskDispatcher {
         datas.put(TASK_MSG_ACTION_KEY, TASK_MSG_ACTION_EXECUTE);
         datas.put(TASK_MSG_NAME_KEY, taskName);
         datas.put(TASK_MSG_BUSSINESS_KEY, businessKey);
-
-        TaskMessgae taskMsg = new TaskMessgae();
-        taskMsg.setTopic(taskName);
-        taskMsg.setData(datas);
-
-        sendMessage(taskMsg);
+        sendMessage(datas);
     }
 
     /**
      * 发送kafka消息
-     * @param taskMsg
+     * @param msgData
      */
-    private void sendMessage(TaskMessgae taskMsg) {
-        kafkaTemplate.send(taskMsg.getTopic(), taskMsg.getData());
+    private void sendMessage(Map<Object, Object> msgData) {
+        kafkaTemplate.send(topic, msgData);
+    }
+
+    /**
+      * Setter method for property <tt>topic</tt>.
+      * 
+      * @param topic value to be assigned to property topic
+      */
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     /**
