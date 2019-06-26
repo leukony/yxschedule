@@ -18,7 +18,7 @@ public interface TaskDispatcher {
     void dispatchToSplitor(String taskName);
 
     /**
-     * 分发到第二层: 子任务加载
+     * 分发到第二层: 子任务载入
      * 
      * @param taskName 任务名称
      * @param item 子任务加载项
