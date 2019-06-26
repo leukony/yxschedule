@@ -89,6 +89,7 @@ public class TaskManager {
             if (task == null) {
                 // TODO LOG
             }
+            return task;
         }
         return null;
     }

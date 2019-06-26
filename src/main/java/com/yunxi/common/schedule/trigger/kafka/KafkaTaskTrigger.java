@@ -1,6 +1,12 @@
 package com.yunxi.common.schedule.trigger.kafka;
 
-import static com.yunxi.common.schedule.TaskConstants.*;
+import static com.yunxi.common.schedule.TaskConstants.TASK_MSG_ACTION_EXECUTE;
+import static com.yunxi.common.schedule.TaskConstants.TASK_MSG_ACTION_KEY;
+import static com.yunxi.common.schedule.TaskConstants.TASK_MSG_ACTION_LOAD;
+import static com.yunxi.common.schedule.TaskConstants.TASK_MSG_ACTION_SPLIT;
+import static com.yunxi.common.schedule.TaskConstants.TASK_MSG_BUSSINESS_KEY;
+import static com.yunxi.common.schedule.TaskConstants.TASK_MSG_ITEM_KEY;
+import static com.yunxi.common.schedule.TaskConstants.TASK_MSG_NAME_KEY;
 
 import java.util.Map;
 
