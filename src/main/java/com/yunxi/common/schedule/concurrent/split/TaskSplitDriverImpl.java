@@ -2,6 +2,9 @@ package com.yunxi.common.schedule.concurrent.split;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.yunxi.common.schedule.dispatch.TaskDispatcher;
 import com.yunxi.common.schedule.model.Task;
 import com.yunxi.common.schedule.model.TaskItem;
@@ -13,8 +16,11 @@ import com.yunxi.common.schedule.model.TaskItem;
  */
 public class TaskSplitDriverImpl implements TaskSplitDriver {
 
+    /** 日志 */
+    private static final Log LOGGER = LogFactory.getLog(TaskSplitDriver.class);
+
     /** 定时任务分发器 */
-    private TaskDispatcher taskDispatcher;
+    private TaskDispatcher   taskDispatcher;
 
     /** 
      * @see com.yunxi.common.schedule.concurrent.split.TaskSplitDriver#split(com.alipay.sofa.platform.schedule.model.Task)
@@ -23,7 +29,7 @@ public class TaskSplitDriverImpl implements TaskSplitDriver {
     public void split(Task task) {
         Splitor splitor = task.getSplitor();
         if (splitor == null) {
-            // TODO LOG
+            LOGGER.warn("任务拆分: 未配置拆分器~" + task.getName());
             return;
         }
 
@@ -31,30 +37,18 @@ public class TaskSplitDriverImpl implements TaskSplitDriver {
         try {
             taskItemList = splitor.split();
         } catch (Exception e) {
-            // TODO LOG
+            LOGGER.error("任务拆分: 任务拆分异常~" + task.getName(), e);
             return;
         }
 
-        if (taskItemList == null || taskItemList.isEmpty()) {
-            // TODO LOG
-            return;
-        }
+        int taskItemSize = taskItemList == null ? 0 : taskItemList.size();
 
-        for (TaskItem item : taskItemList) {
-            dispatchToLoader(task.getName(), item);
-        }
-    }
+        LOGGER.info("任务拆分: 拆分完成~" + task.getName() + ",大小~" + taskItemSize);
 
-    /***
-     * 分发定时任务拆分出子任务
-     * @param taskName
-     * @param item
-     */
-    private void dispatchToLoader(String taskName, TaskItem item) {
-        try {
-            taskDispatcher.dispatchToLoader(taskName, item);
-        } catch (Exception e) {
-            // TODO LOG
+        if (taskItemSize > 0) {
+            for (TaskItem item : taskItemList) {
+                taskDispatcher.dispatchToLoader(task.getName(), item);
+            }
         }
     }
 

@@ -7,6 +7,9 @@ package com.yunxi.common.schedule;
  */
 public class TaskConstants {
 
+    /** 定时任务消息Tracer的KEY */
+    public static final String TASK_MSG_TRACER_KEY     = "TASK_TRACER";
+
     /** 定时任务消息动作的KEY */
     public static final String TASK_MSG_ACTION_KEY     = "TASK_ACTION";
 

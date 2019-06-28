@@ -39,6 +39,7 @@
 	<!-- 分发器 -->
 	<bean id="taskDispatcher"
 		class="com.yunxi.common.schedule.dispatch.kafka.KafkaTaskDispatcher">
+		<property name="appName" value="${yxschedule.app_name}" />
 		<property name="topic" value="${yxschedule.kafka.topic}" />
 		<property name="kafkaTemplate" ref="taskDispatcherKafkaTemplate" />
 	</bean>
@@ -46,6 +47,7 @@
 	<!-- 触发器 -->
 	<bean id="taskTrigger"
 		class="com.yunxi.common.schedule.trigger.kafka.KafkaTaskTrigger">
+		<property name="appName" value="${yxschedule.app_name}" />
 		<property name="taskManager" ref="taskManager" />
 	</bean>
 

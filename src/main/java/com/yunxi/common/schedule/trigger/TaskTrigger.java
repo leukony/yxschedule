@@ -10,7 +10,7 @@ public interface TaskTrigger {
     /**
      * 注册定时任务
      * @param groupId  系统集群名称
-     * @param taskName 定时任务名称
+     * @param taskNames 定时任务名称
      */
-    void registerTask(String groupId, String taskName);
+    void registerTask(String groupId, String[] taskNames);
 }

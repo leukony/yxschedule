@@ -26,7 +26,7 @@ public class Task {
     private Executer               executer;
 
     /** 是否采用异步方式执行任务 */
-    private boolean                async;
+    private boolean                async = true;
 
     /** 任务执行线程池, 异步方式任务必须提供线程池 */
     private ThreadPoolTaskExecutor threadPool;

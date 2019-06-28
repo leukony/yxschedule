@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.yunxi.common.schedule.concurrent.execute.TaskExecuteDriver;
 import com.yunxi.common.schedule.concurrent.load.TaskLoadDriver;
@@ -18,8 +20,11 @@ import com.yunxi.common.schedule.model.TaskItem;
  */
 public class TaskManager {
 
+    /** 日志 */
+    private static final Log        LOGGER = LogFactory.getLog(TaskManager.class);
+
     /** 定时任务集合 */
-    private final Map<String, Task> tasks = new ConcurrentHashMap<String, Task>();
+    private final Map<String, Task> tasks  = new ConcurrentHashMap<String, Task>();
 
     /** 定时任务拆分驱动器 */
     private TaskSplitDriver         taskSplitDriver;
@@ -87,7 +92,7 @@ public class TaskManager {
         if (StringUtils.isNotBlank(taskName)) {
             Task task = tasks.get(taskName);
             if (task == null) {
-                // TODO LOG
+                LOGGER.warn("未找到定时任务~" + taskName);
             }
             return task;
         }

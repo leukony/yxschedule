@@ -1,8 +1,12 @@
 package com.yunxi.common.schedule.config;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.yunxi.common.schedule.TaskManager;
+import com.yunxi.common.schedule.concurrent.execute.Executer;
+import com.yunxi.common.schedule.concurrent.load.Loader;
+import com.yunxi.common.schedule.concurrent.split.Splitor;
 import com.yunxi.common.schedule.model.Task;
 
 /**
@@ -21,12 +25,41 @@ public class TaskConfig extends Task implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         Task task = new Task();
-        task.setName(getName());
-        task.setSplitor(getSplitor());
-        task.setLoader(getLoader());
-        task.setExecuter(getExecuter());
+
+        String taskNameS = getName();
+        if (taskNameS == null) {
+            throw new IllegalArgumentException("任务名称不能为空！");
+        }
+        task.setName(taskNameS);
+
+        Splitor taskSplitorS = getSplitor();
+        if (taskSplitorS == null) {
+            throw new IllegalArgumentException("任务拆分器未配置！");
+        }
+        task.setSplitor(taskSplitorS);
+
+        Loader taskLoaderS = getLoader();
+        if (taskLoaderS == null) {
+            throw new IllegalArgumentException("任务加载器未配置！");
+        }
+        task.setLoader(taskLoaderS);
+
+        Executer taskExecuterS = getExecuter();
+        if (taskExecuterS == null) {
+            throw new IllegalArgumentException("任务执行器未配置！");
+        }
+        task.setExecuter(taskExecuterS);
+
         task.setAsync(isAsync());
-        task.setThreadPool(getThreadPool());
+
+        if (isAsync()) {
+            ThreadPoolTaskExecutor taskThreadPoolS = getThreadPool();
+            if (taskThreadPoolS == null) {
+                throw new IllegalArgumentException("任务异步执行线程池未配置！");
+            }
+            task.setThreadPool(taskThreadPoolS);
+        }
+
         taskManager.register(task);
     }
 

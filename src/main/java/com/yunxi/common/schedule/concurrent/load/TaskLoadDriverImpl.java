@@ -2,6 +2,9 @@ package com.yunxi.common.schedule.concurrent.load;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.yunxi.common.schedule.dispatch.TaskDispatcher;
 import com.yunxi.common.schedule.model.Task;
 import com.yunxi.common.schedule.model.TaskItem;
@@ -13,8 +16,11 @@ import com.yunxi.common.schedule.model.TaskItem;
  */
 public class TaskLoadDriverImpl implements TaskLoadDriver {
 
+    /** 日志 */
+    private static final Log LOGGER = LogFactory.getLog(TaskLoadDriver.class);
+
     /** 定时任务分发器 */
-    private TaskDispatcher taskDispatcher;
+    private TaskDispatcher   taskDispatcher;
 
     /** 
      * @see com.yunxi.common.schedule.concurrent.load.TaskLoadDriver#load(com.yunxi.common.schedule.model.Task, com.yunxi.common.schedule.model.TaskItem)
@@ -23,7 +29,7 @@ public class TaskLoadDriverImpl implements TaskLoadDriver {
     public void load(Task task, TaskItem item) {
         Loader loader = task.getLoader();
         if (loader == null) {
-            // TODO LOG
+            LOGGER.warn("任务加载:未配置加载器~" + task.getName());
             return;
         }
 
@@ -31,30 +37,18 @@ public class TaskLoadDriverImpl implements TaskLoadDriver {
         try {
             businessKeys = loader.load(item);
         } catch (Exception e) {
-            // TODO LOG
+            LOGGER.error("任务加载:任务加载异常~" + task.getName() + ",任务项~" + item, e);
             return;
         }
 
-        if (businessKeys == null || businessKeys.isEmpty()) {
-            // TODO LOG
-            return;
-        }
+        int businessKeySize = businessKeys == null ? 0 : businessKeys.size();
 
-        for (String businessKey : businessKeys) {
-            dispatchToExecuter(task.getName(), businessKey);
-        }
-    }
+        LOGGER.info("任务加载:加载完成~" + task.getName() + ",任务项~" + item + ",大小~" + businessKeySize);
 
-    /***
-     * 分发子任务加载的数据去执行
-     * @param taskName
-     * @param businessKey
-     */
-    private void dispatchToExecuter(String taskName, String businessKey) {
-        try {
-            taskDispatcher.dispatchToExecuter(taskName, businessKey);
-        } catch (Exception e) {
-            // TODO LOG
+        if (businessKeySize > 0) {
+            for (String businessKey : businessKeys) {
+                taskDispatcher.dispatchToExecuter(task.getName(), businessKey);
+            }
         }
     }
 

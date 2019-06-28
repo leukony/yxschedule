@@ -1,5 +1,8 @@
 package com.yunxi.common.schedule.dispatch;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.yunxi.common.schedule.model.TaskItem;
 
 /**
@@ -9,6 +12,9 @@ import com.yunxi.common.schedule.model.TaskItem;
  */
 public abstract class AbstractTaskDispatcher implements TaskDispatcher {
 
+    /** 日志 */
+    protected static final Log LOGGER = LogFactory.getLog(TaskDispatcher.class);
+
     /** 
      * @see com.yunxi.common.schedule.dispatch.TaskDispatcher#dispatchToSplitor(java.lang.String)
      */
@@ -17,7 +23,7 @@ public abstract class AbstractTaskDispatcher implements TaskDispatcher {
         try {
             doDispatchToSplitor(taskName);
         } catch (Exception e) {
-            // TODO LOG
+            LOGGER.error("任务分发: 分发任务拆分异常~" + taskName, e);
         }
     }
 
@@ -29,7 +35,7 @@ public abstract class AbstractTaskDispatcher implements TaskDispatcher {
         try {
             doDispatchToLoader(taskName, item);
         } catch (Exception e) {
-            // TODO LOG
+            LOGGER.error("任务分发: 分发任务加载异常~" + taskName + ",任务项~" + item, e);
         }
     }
 
@@ -41,7 +47,7 @@ public abstract class AbstractTaskDispatcher implements TaskDispatcher {
         try {
             doDispatchToExecuter(taskName, businessKey);
         } catch (Exception e) {
-            // TODO LOG
+            LOGGER.error("任务分发: 分发任务执行异常~" + taskName + ",标识~" + businessKey, e);
         }
     }
 

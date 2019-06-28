@@ -1,5 +1,8 @@
 package com.yunxi.common.schedule.concurrent.execute;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.yunxi.common.schedule.model.Task;
 import com.yunxi.common.tracer.concurrent.TracerRunnable;
 
@@ -10,6 +13,9 @@ import com.yunxi.common.tracer.concurrent.TracerRunnable;
  */
 public class TaskExecuteDriverImpl implements TaskExecuteDriver {
 
+    /** 日志 */
+    private static final Log LOGGER = LogFactory.getLog(TaskExecuteDriver.class);
+
     /** 
      * @see com.yunxi.common.schedule.concurrent.execute.TaskExecuteDriver#execute(com.alipay.sofa.platform.schedule.model.Task, java.lang.String)
      */
@@ -17,7 +23,7 @@ public class TaskExecuteDriverImpl implements TaskExecuteDriver {
     public void execute(Task task, final String businessKey) {
         final Executer executer = task.getExecuter();
         if (executer == null) {
-            // TODO LOG
+            LOGGER.warn("任务执行:未配置执行器~" + task.getName());
             return;
         }
 
@@ -25,7 +31,7 @@ public class TaskExecuteDriverImpl implements TaskExecuteDriver {
             if (task.isAsync()) {
                 // 异步执行
                 if (task.getThreadPool() == null) {
-                    // TODO LOG 
+                    LOGGER.warn("任务执行:异步任务未配置线程池~" + task.getName());
                     return;
                 }
                 task.getThreadPool().execute(new TracerRunnable() {
@@ -34,17 +40,19 @@ public class TaskExecuteDriverImpl implements TaskExecuteDriver {
                     public void doRun() {
                         try {
                             executer.execute(businessKey);
+                            LOGGER.info("任务执行:任务执行完成,标识~" + businessKey);
                         } catch (Exception e) {
-                            // TODO LOG
+                            LOGGER.error("任务执行:任务执行异常,标识~" + businessKey, e);
                         }
                     }
                 });
             } else {
                 // 同步执行
                 executer.execute(businessKey);
+                LOGGER.info("任务执行:任务执行完成,标识~" + businessKey);
             }
         } catch (Exception e) {
-            // TODO LOG
+            LOGGER.error("任务执行:任务执行异常,标识~" + businessKey, e);
         }
     }
 }
