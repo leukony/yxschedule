@@ -25,7 +25,7 @@ public class Task {
     /** 执行器 */
     private Executer               executer;
 
-    /** 是否采用异步方式执行任务 */
+    /** 是否采用异步方式执行任务,默认：异步 */
     private boolean                async = true;
 
     /** 任务执行线程池, 异步方式任务必须提供线程池 */
